@@ -11,68 +11,59 @@
  * Методу в качестве параметра передается символьная строка s,
  * e-mail возвращается в той же строке s:public string SearchMail (string s)*/
 using WorkingWithStrings;
-using WorkingWithStrings.RUN;
-using WorkingWithStrings.TXT;
 
-var list = new List<string>()
-{
-    "Петров Петр Петрович # petr@mail.ru",
-    "Широков Сергей Алексеевич # stan@mail.ru",
-    "Сущевский Дмитрий Вячеславович # XanBaker@mail.ru",
-    "Иванов Иван Иванович # iviviv@mail.ru"
-};
-
-var pathCsv = "C:\\TestFile.csv";
 var pathMailCsv = "C:\\TestFileMail.csv";
-
-var pathTxt = "C:\\TestFile.txt";
 var pathMailTxt = "C:\\TestFileMail.txt";
 
-var csv = new CsvRun();
-csv.Run(pathCsv, list);
-PrintFile(pathCsv);
-Console.WriteLine();
-RunCsv(pathCsv, pathMailCsv);
-Console.WriteLine();
+var pathTxt = "C:\\TestFile.txt";
+var pathCsv = "C:\\TestFile.csv";
 
-var txt = new TxtRun();
-txt.Run(pathTxt, list);
-PrintFile(pathCsv);
-Console.WriteLine();
-RunTxt(pathTxt, pathMailTxt);
-Console.WriteLine();
+Run(pathCsv, pathMailCsv);
+Run(pathTxt, pathMailTxt);
 
 
-
-
-
-
-void RunCsv(string pathCsv, string pathMailCsv)
-{
-    var fileReaderCsv = new UserDataReaderCsv(pathCsv);
-    var mailsCsv = fileReaderCsv.SearchMailInFile();
-
-    var fileWriteCsv = new UserDataWriterCsv(pathMailCsv);
-    fileWriteCsv.Write(mailsCsv);
-    PrintFile(pathMailCsv);
-}
-
-void RunTxt(string pathTxt, string pathMailTxt)
-{
-    var fileReaderTxt = new UserDataReaderTxt(pathTxt);
-    var mailsTxt = fileReaderTxt.SearchMailInFile();
-
-    var fileWriteTxt = new UserDataWriterTxt(pathMailTxt);
-    fileWriteTxt.Write(mailsTxt);
-    PrintFile(pathMailTxt);
-}
 
 void PrintFile(string path)
 {
     if (!File.Exists(path))
         throw new FileNotFoundException("Файла нет!");
-    foreach (string line in File.ReadLines(path))
+
+    Console.WriteLine($"Вывод строк файла, по пути {path}");
+
+    Console.WriteLine(string.Join("\n", File.ReadLines(path)) + "\n");
+}
+
+
+void Run(string path, string pathMail)
+{
+    if (path == null || pathMail == null)
+        throw new FileLoadException("NUll!!");
+
+    var data = new List<string>()
     {
-        Console.WriteLine(line);
-    }
+    "Петров Петр Петрович # petr@mail.ru",
+    "Широков Сергей Алексеевич # stan@mail.ru",
+    "Сущевский Дмитрий Вячеславович # XanBaker@mail.ru",
+    "Иванов Иван Иванович # iviviv@mail.ru"
+    };
+
+
+    var firstFileOperation = new UserDataOperationFactory(path);
+
+    //Запись списка пользователей с их mail-ом.
+    var writeFile = firstFileOperation.CreateWriter();
+    writeFile.WriteAllData(data);
+
+    //Чтение файла и запись в переменную dataFile списка типа <UserData>.
+    var readFile = firstFileOperation.CreateReader();
+    var dataFile = readFile.SearchMailInFile();
+
+    PrintFile(path);
+
+    //Запись списка типа <UserData> в файл по пути  pathMailCsv и вывод на печать c этого файла.
+    var secondFileOperationeFile = new UserDataOperationFactory(pathMail);
+    var writeFileMail = secondFileOperationeFile.CreateWriter();
+    writeFileMail.WriteMail(dataFile);
+
+    PrintFile(pathMail);
 }
