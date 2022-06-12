@@ -1,18 +1,20 @@
-﻿using WorkingWithStrings.Interface;
+﻿using WorkingWithStrings.Exception;
+using WorkingWithStrings.Interface;
 using WorkingWithStrings.TXT;
 
 namespace WorkingWithStrings
 {
     public class UserDataOperationFactory
     {
+        private static readonly List<string> _type = new List<string> { ".csv", ".txt" };
         private readonly string _path;
 
         public UserDataOperationFactory(string path)
         {
             if (path == null)
-                throw new ArgumentNullException("Пустая строка!");
+                throw new ArgumentNullException("Пустая строка");
             if (!ValidFileTypes(path))
-                throw new FileLoadException("Типы файлов не верного формата!");
+                throw new ArgumentException($"Типы файлов не верного формата.\nДоступные типы:  {string.Join(";   ", _type)}");
             _path = path;
         }
 
@@ -28,7 +30,7 @@ namespace WorkingWithStrings
                     return new UserDataWriterTxt(_path);
             }
 
-            throw new TypeAccessException("Несогласованность типа файла!");
+            throw new NotSupportedExtensionException($"Доступные типы:  {string.Join("; ", _type)}");
         }
 
         public IUserDataReader CreateReader()
@@ -43,16 +45,15 @@ namespace WorkingWithStrings
                     return new UserDataReaderTxt(_path);
             }
 
-            throw new TypeAccessException("Несогласованность типа файла!");
+            throw new NotSupportedExtensionException($"Доступные типы:  {string.Join("; ", _type)}");
+
         }
+
         private bool ValidFileTypes(string path)
         {
-            var type = new List<string> { ".csv", ".txt" };
             var typeFile = Path.GetExtension(path);
 
-            if (type.Any(x => x == typeFile))
-                return true;
-            return false;
+            return _type.Any(x => x == typeFile);
         }
     }
 }
